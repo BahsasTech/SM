@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduManage - Sign in</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <h1>&#127891; EduManage</h1>
+      <p class="sub">Online School Management System</p>
+      <form id="loginForm">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="username" placeholder="you@school.edu" required />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required />
+        </div>
+        <button class="btn primary" style="width:100%;justify-content:center" type="submit">Sign in</button>
+        <p id="error" class="muted" style="color:var(--red);min-height:18px;margin:12px 0 0"></p>
+      </form>
+      <div class="creds">
+        <strong>Demo accounts</strong><br />
+        Admin &mdash; <code>admin@school.edu</code> / <code>admin123</code><br />
+        Teacher &mdash; <code>amara@school.edu</code> / <code>teacher123</code><br />
+        Student &mdash; <code>student@school.edu</code> / <code>student123</code><br />
+        Parent &mdash; <code>parent@school.edu</code> / <code>parent123</code>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (location.protocol === "file:") {
+      document.querySelector(".login-card").innerHTML =
+        '<h1>Start the server first</h1>' +
+        '<p class="sub" style="color:var(--red)">You opened this page as a file. The app needs its backend.</p>' +
+        '<p class="sub">Open a terminal in the project folder and run:</p>' +
+        '<pre style="background:#f1f5f9;padding:12px;border-radius:8px">npm start</pre>' +
+        '<p class="sub">Then open <a href="http://localhost:3000">http://localhost:3000</a> in your browser.</p>';
+    }
+  </script>
+
+  <script type="module">
+    import { api, setSession, getUser } from "./js/common.js";
+    if (getUser()) window.location.href = "dashboard.html";
+    const form = document.getElementById("loginForm");
+    const errorEl = document.getElementById("error");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorEl.textContent = "";
+      const btn = form.querySelector("button");
+      btn.disabled = true;
+      btn.textContent = "Signing in...";
+      try {
+        const fd = new FormData(form);
+        const data = await api("/auth/login", {
+          method: "POST",
+          body: { email: fd.get("email"), password: fd.get("password") },
+        });
+        setSession(data.token, data.user);
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        errorEl.textContent = err.message;
+        btn.disabled = false;
+        btn.textContent = "Sign in";
+      }
+    });
+  </script>
+</body>
+</html>
